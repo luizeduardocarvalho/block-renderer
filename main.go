@@ -86,17 +86,13 @@ func main() {
 }
 
 func drawBlock(blockName string, x int32, y int32) {
-	var pixel sdl.Rect
-	pixel.X = x
-	pixel.Y = y
-	pixel.W = 50
-	pixel.H = 50
-
-	var rect sdl.Rect
-	rect.X = int32(blocks[blockName].x)
-	rect.Y = int32(blocks[blockName].y)
-	rect.W = int32(TEXTURE_WIDTH)
-	rect.H = int32(TEXTURE_HEIGHT)
+	pixel := sdl.Rect{X: x, Y: y, W: 50, H: 50}
+	rect := sdl.Rect{
+		X: int32(blocks[blockName].x),
+		Y: int32(blocks[blockName].y),
+		W: int32(TEXTURE_WIDTH),
+		H: int32(TEXTURE_HEIGHT),
+	}
 
 	block := getAreaTexture(rect, gTexture)
 	if block == nil {

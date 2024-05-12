@@ -24,9 +24,7 @@ var (
 )
 
 func main() {
-	blocks = make(map[string]Point2D)
-	blocks["dirt"] = Point2D{x: 0, y: 0}
-	blocks["ice"] = Point2D{x: 200, y: 0}
+	initializeBlocks()
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
@@ -40,6 +38,7 @@ func main() {
 	}
 
 	screen.window = window
+	defer window.Destroy()
 	defer screen.window.Destroy()
 
 	// Create renderer
@@ -50,7 +49,11 @@ func main() {
 
 	screen.renderer = renderer
 	screen.renderer.SetDrawColor(0, 0, 0, 0)
+
+	// how do I just assign the return of CreateRenderer to a global variable
+	// without making another variable?
 	defer screen.renderer.Destroy()
+	defer renderer.Destroy()
 
 	// Create texture
 	texture, err := img.LoadTexture(screen.renderer, "./texture_blocks.jpg")
@@ -59,41 +62,8 @@ func main() {
 	}
 
 	gTexture = texture
+	defer texture.Destroy()
 	defer gTexture.Destroy()
-
-	var dirtRect sdl.Rect
-	dirtRect.X = int32(blocks["dirt"].x)
-	dirtRect.Y = int32(blocks["dirt"].y)
-	dirtRect.W = int32(TEXTURE_WIDTH)
-	dirtRect.H = int32(TEXTURE_HEIGHT)
-
-	block := getAreaTexture(dirtRect, gTexture)
-	if block == nil {
-		panic("block is nil")
-	}
-
-	var iceRect sdl.Rect
-	iceRect.X = int32(blocks["ice"].x)
-	iceRect.Y = int32(blocks["ice"].y)
-	iceRect.W = int32(TEXTURE_WIDTH)
-	iceRect.H = int32(TEXTURE_HEIGHT)
-
-	iceBlock := getAreaTexture(iceRect, gTexture)
-	if iceBlock == nil {
-		panic("block is nil")
-	}
-
-	var texturePixel sdl.Rect
-	texturePixel.X = 0
-	texturePixel.Y = 0
-	texturePixel.W = 50
-	texturePixel.H = 50
-
-	var secondPixel sdl.Rect
-	secondPixel.X = 50
-	secondPixel.Y = 0
-	secondPixel.W = 50
-	secondPixel.H = 50
 
 	running := true
 	for running {
@@ -107,12 +77,40 @@ func main() {
 		}
 
 		screen.renderer.Clear()
-		screen.renderer.Copy(block, nil, &texturePixel)
-		screen.renderer.Copy(iceBlock, nil, &secondPixel)
+		drawBlock("dirt", 0, 0)
+		drawBlock("ice", 50, 0)
 		screen.renderer.Present()
 
 		sdl.Delay(33)
 	}
+}
+
+func drawBlock(blockName string, x int32, y int32) {
+	var pixel sdl.Rect
+	pixel.X = x
+	pixel.Y = y
+	pixel.W = 50
+	pixel.H = 50
+
+	var rect sdl.Rect
+	rect.X = int32(blocks[blockName].x)
+	rect.Y = int32(blocks[blockName].y)
+	rect.W = int32(TEXTURE_WIDTH)
+	rect.H = int32(TEXTURE_HEIGHT)
+
+	block := getAreaTexture(rect, gTexture)
+	if block == nil {
+		panic("block is nil")
+	}
+
+	screen.renderer.Copy(block, nil, &pixel)
+}
+
+func initializeBlocks() {
+	// TODO: Initialize the rest of the blocks
+	blocks = make(map[string]Point2D)
+	blocks["dirt"] = Point2D{x: 0, y: 0}
+	blocks["ice"] = Point2D{x: 200, y: 0}
 }
 
 func getAreaTexture(rect sdl.Rect, source *sdl.Texture) *sdl.Texture {

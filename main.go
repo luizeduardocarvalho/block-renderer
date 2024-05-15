@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -15,12 +17,19 @@ type Screen struct {
 	renderer *sdl.Renderer
 }
 
+type Scene struct {
+	blocks [800]*sdl.Rect
+}
+
 var (
 	screen         Screen
 	gTexture       *sdl.Texture
+	selectedRect   *sdl.Rect
+	mousePos       sdl.Point
 	blocks         map[string]Point2D
 	TEXTURE_HEIGHT = 200
 	TEXTURE_WIDTH  = 200
+	scene          = new(Scene)
 )
 
 func main() {
@@ -65,27 +74,46 @@ func main() {
 	defer texture.Destroy()
 	defer gTexture.Destroy()
 
+	// leftMouseButtonDown := false
+
+	screen.renderer.Clear()
+	scene.blocks[0] = drawBlock("dirt", 0, 0)
+	scene.blocks[1] = drawBlock("ice", 50, 0)
+	screen.renderer.Present()
+
 	running := true
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
+			switch event := event.(type) {
 			case *sdl.QuitEvent:
 				println("Quit")
 				running = false
 				break
+			case *sdl.MouseMotionEvent:
+				mousePos.X = event.X
+				mousePos.Y = event.Y
+				fmt.Println(mousePos)
+				break
 			}
 		}
 
-		screen.renderer.Clear()
-		drawBlock("dirt", 0, 0)
-		drawBlock("ice", 50, 0)
-		screen.renderer.Present()
+		// screen.renderer.Clear()
+		// drawBlock("dirt", 0, 0)
+		// drawBlock("ice", 50, 0)
+		// screen.renderer.Present()
 
 		sdl.Delay(33)
 	}
 }
 
-func drawBlock(blockName string, x int32, y int32) {
+func convertEventToMousePosition(event *sdl.MouseMotionEvent) sdl.Point {
+	return sdl.Point{
+		X: event.X,
+		Y: event.Y,
+	}
+}
+
+func drawBlock(blockName string, x int32, y int32) *sdl.Rect {
 	pixel := sdl.Rect{X: x, Y: y, W: 50, H: 50}
 	rect := sdl.Rect{
 		X: int32(blocks[blockName].x),
@@ -100,6 +128,8 @@ func drawBlock(blockName string, x int32, y int32) {
 	}
 
 	screen.renderer.Copy(block, nil, &pixel)
+
+	return &pixel
 }
 
 func initializeBlocks() {

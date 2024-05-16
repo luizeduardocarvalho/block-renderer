@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -105,7 +103,6 @@ func main() {
 
 				// update the selected block based on the mouse position
 				if selectedRect != nil {
-					fmt.Println(selectedRect.X)
 					selectedRect.X = mousePos.X - selectedRect.W/2
 					selectedRect.Y = mousePos.Y - selectedRect.H/2
 				}
@@ -123,7 +120,6 @@ func main() {
 
 		screen.renderer.Clear()
 		for _, block := range scene.blocks {
-			fmt.Println("here")
 			if block.block != nil {
 				drawBlock(block.blockType, block.block.X, block.block.Y)
 			}

@@ -12,13 +12,18 @@ type Point2D struct {
 	y int
 }
 
+type Block struct {
+	blockType string
+	block     *sdl.Rect
+}
+
 type Screen struct {
 	window   *sdl.Window
 	renderer *sdl.Renderer
 }
 
 type Scene struct {
-	blocks [800]*sdl.Rect
+	blocks [40]Block
 }
 
 var (
@@ -29,10 +34,17 @@ var (
 	blocks         map[string]Point2D
 	TEXTURE_HEIGHT = 200
 	TEXTURE_WIDTH  = 200
-	scene          = new(Scene)
+	scene          = Scene{}
 )
 
 func main() {
+	for i := 0; i < len(scene.blocks); i++ {
+		scene.blocks[i] = Block{
+			block:     nil,
+			blockType: "",
+		}
+	}
+
 	initializeBlocks()
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -74,12 +86,10 @@ func main() {
 	defer texture.Destroy()
 	defer gTexture.Destroy()
 
-	// leftMouseButtonDown := false
-
-	screen.renderer.Clear()
-	scene.blocks[0] = drawBlock("dirt", 0, 0)
-	scene.blocks[1] = drawBlock("ice", 50, 0)
-	screen.renderer.Present()
+	scene.blocks[0].block = drawBlock("dirt", 0, 0)
+	scene.blocks[0].blockType = "dirt"
+	scene.blocks[1].block = drawBlock("ice", 50, 0)
+	scene.blocks[1].blockType = "ice"
 
 	running := true
 	for running {
@@ -92,24 +102,40 @@ func main() {
 			case *sdl.MouseMotionEvent:
 				mousePos.X = event.X
 				mousePos.Y = event.Y
-				fmt.Println(mousePos)
+
+				// update the selected block based on the mouse position
+				if selectedRect != nil {
+					fmt.Println(selectedRect.X)
+					selectedRect.X = mousePos.X - selectedRect.W/2
+					selectedRect.Y = mousePos.Y - selectedRect.H/2
+				}
+				break
+			case *sdl.MouseButtonEvent:
+				if event.Type == sdl.MOUSEBUTTONDOWN {
+					// loop the blocks to find the selected one
+					for _, block := range scene.blocks {
+						if block.block != nil {
+							if (mousePos.X > block.block.X && mousePos.X < (block.block.X+block.block.W)) &&
+								mousePos.Y > block.block.Y && mousePos.Y < (block.block.Y+block.block.H) {
+								selectedRect = block.block
+							}
+						}
+					}
+				}
 				break
 			}
 		}
 
-		// screen.renderer.Clear()
-		// drawBlock("dirt", 0, 0)
-		// drawBlock("ice", 50, 0)
-		// screen.renderer.Present()
+		screen.renderer.Clear()
+		for _, block := range scene.blocks {
+			fmt.Println("here")
+			if block.block != nil {
+				drawBlock(block.blockType, block.block.X, block.block.Y)
+			}
+		}
+		screen.renderer.Present()
 
 		sdl.Delay(33)
-	}
-}
-
-func convertEventToMousePosition(event *sdl.MouseMotionEvent) sdl.Point {
-	return sdl.Point{
-		X: event.X,
-		Y: event.Y,
 	}
 }
 

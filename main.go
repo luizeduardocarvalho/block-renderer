@@ -112,15 +112,10 @@ func main() {
 				break
 			case *sdl.MouseButtonEvent:
 				if event.Type == sdl.MOUSEBUTTONDOWN {
-					// loop the blocks to find the selected one
-					for _, block := range scene.blocks {
-						if block.block != nil {
-							if (mousePos.X > block.block.X && mousePos.X < (block.block.X+block.block.W)) &&
-								mousePos.Y > block.block.Y && mousePos.Y < (block.block.Y+block.block.H) {
-								selectedRect = block.block
-							}
-						}
-					}
+					dragObject()
+				}
+				if event.Type == sdl.MOUSEBUTTONUP {
+					selectedRect = nil
 				}
 				break
 			}
@@ -136,6 +131,18 @@ func main() {
 		screen.renderer.Present()
 
 		sdl.Delay(33)
+	}
+}
+
+func dragObject() {
+	// loop the blocks to find the selected one
+	for _, block := range scene.blocks {
+		if block.block != nil {
+			if (mousePos.X > block.block.X && mousePos.X < (block.block.X+block.block.W)) &&
+				mousePos.Y > block.block.Y && mousePos.Y < (block.block.Y+block.block.H) {
+				selectedRect = block.block
+			}
+		}
 	}
 }
 
